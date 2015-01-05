@@ -4,7 +4,7 @@ Just a simple Win32.Adson antivirus that scans the Portable Executable(PE) for t
 
 2) If the section's Virtual Size is equal to 00001804H it prompts a message bot with the warning.
 
-3) If the sectioon's Characteristic matches the Adson Virus, that is, it is equal to 0E0000020H, it prompts a message box with the warning.
+3) If the section's Characteristic matches the Adson Virus, that is, it is equal to 0E0000020H, it prompts a message box with the warning.
 
 4) Finally, if 1, 2, 3 are met, a final warning appears with the conclusion that the file is infected.
 
