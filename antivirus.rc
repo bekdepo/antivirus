@@ -2,11 +2,11 @@
 #define IDD_SECTIONTABLE                104
 #define IDC_SECTIONLIST                 1001
 IDD_SECTIONTABLE DIALOG DISCARDABLE  0, 0, 333, 96
-STYLE DS_MODALFRAME | DS_3DLOOK | DS_CENTER | WS_POPUP | WS_CAPTION | 
+STYLE DS_MODALFRAME | DS_3DLOOK | DS_CENTER | WS_POPUP | WS_CAPTION |
     WS_SYSMENU
-CAPTION "Section Header Information"
+CAPTION "Section Header Information - Daniel Project ASM"
 FONT 8, "MS Sans Serif"
 BEGIN
-    CONTROL         "List1",IDC_SECTIONLIST,"SysListView32",LVS_REPORT | 
+    CONTROL         "List1",IDC_SECTIONLIST,"SysListView32",LVS_REPORT |
                     WS_BORDER | WS_TABSTOP,5,1,324,90
 END

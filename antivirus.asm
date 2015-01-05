@@ -42,9 +42,13 @@ VirtualAddress		db "V.Address", 0
 SizeOfRawData		db "Raw Size", 0
 RawOffset			db "Raw Offset", 0
 Characteristics		db "Characteristics", 0
+SuspiciousFile		db "Suspicious file detected", 0
 VirusFoundMessage		db "This file is infected with Win32.Adson", 0
 VirusFoundCaption		db "Malware Detected", 0
-AdsonName			db ".Adson", 0
+VirusName			db ".Ads", 0
+AdsonName			db "The name of the last section is identical to that of the Adson Virus.", 0
+AdsonVirtualSize		db "Virtual size of the last section resembles that of the Adson Virus.", 0
+AdsonCharacteristic		db "The characteristic of the last section is identical to the Adson Virus.", 0
 
 .data?
 hInstance 		dd ?
@@ -54,7 +58,10 @@ hMapping 		dd ?
 pMapping 		dd ?
 ValidPE 		dd ?
 NumberOfSections 	dw ?
-ValidAdson		dd ?
+AdsonTrigger1	dd ?
+AdsonTrigger2	dd ?
+AdsonTrigger3	dd ?
+
 
 .code
 start proc
@@ -142,14 +149,15 @@ SEHHandler proc C uses edx pExcept:DWORD, pFrame:DWORD, pContext:DWORD, pDispatc
 	ret
 SEHHandler endp
 
+
 DlgProc proc uses edi esi hDlg:DWORD, uMsg:DWORD, wParam:DWORD, lParam:DWORD
-	LOCAL lvc:LV_COLUMN
+	LOCAL lvc:LV_COLUMN 				; LV = List View
 	LOCAL lvi:LV_ITEM
 	.if uMsg == WM_INITDIALOG
 		mov esi, lParam
 		mov lvc.imask, LVCF_FMT or LVCF_TEXT or LVCF_WIDTH or LVCF_SUBITEM
 		mov lvc.fmt, LVCFMT_LEFT
-		mov lvc.lx, 80
+		mov lvc.lx, 81
 		mov lvc.iSubItem, 0
 		mov lvc.pszText, offset SectionName
 		invoke SendDlgItemMessage, hDlg, IDC_SECTIONLIST, LVM_INSERTCOLUMN, 0, addr lvc
@@ -185,22 +193,31 @@ DlgProc proc uses edi esi hDlg:DWORD, uMsg:DWORD, wParam:DWORD, lParam:DWORD
 			lea edi, [esi].Name1
 			push esi
 			cld
-			mov ecx, 7
-			lea esi, AdsonName
+			mov ecx, 4
+			lea esi, VirusName
 			repz cmpsb
-			jne continuation
-			invoke MessageBox, 0, addr VirusFoundMessage, addr VirusFoundCaption, MB_OK+MB_ICONWARNING
+			jne continuation1
+			invoke MessageBox, 0, addr AdsonName, addr SuspiciousFile, MB_OK+MB_ICONINFORMATION
+			mov AdsonTrigger1, TRUE
 
-		continuation:
+		continuation1:
 			pop esi
 			pop edi
 			invoke SendDlgItemMessage, hDlg, IDC_SECTIONLIST, LVM_INSERTITEM, 0, addr lvi
 
+
 			invoke wsprintf, addr buffer, addr template, [esi].Misc.VirtualSize
 			lea eax, buffer
 			mov lvi.pszText, eax
+			cmp [esi].Misc.VirtualSize, 00001804h
+			jne continuation2
+			invoke MessageBox, 0, addr AdsonVirtualSize, addr SuspiciousFile, MB_OK+MB_ICONINFORMATION
+			mov AdsonTrigger2, TRUE
+
+		continuation2:
 			inc lvi.iSubItem
 			invoke SendDlgItemMessage, hDlg, IDC_SECTIONLIST, LVM_SETITEM, 0, addr lvi
+
 
 			invoke wsprintf, addr buffer, addr template, [esi].VirtualAddress
 			lea eax, buffer
@@ -208,11 +225,13 @@ DlgProc proc uses edi esi hDlg:DWORD, uMsg:DWORD, wParam:DWORD, lParam:DWORD
 			inc lvi.iSubItem
 			invoke SendDlgItemMessage, hDlg, IDC_SECTIONLIST, LVM_SETITEM, 0, addr lvi
 
+
 			invoke wsprintf, addr buffer, addr template, [esi].SizeOfRawData
 			lea eax, buffer
 			mov lvi.pszText, eax
 			inc lvi.iSubItem
 			invoke SendDlgItemMessage, hDlg, IDC_SECTIONLIST, LVM_SETITEM, 0, addr lvi
+
 
 			invoke wsprintf, addr buffer, addr template, [esi].PointerToRawData
 			lea eax, buffer
@@ -220,9 +239,16 @@ DlgProc proc uses edi esi hDlg:DWORD, uMsg:DWORD, wParam:DWORD, lParam:DWORD
 			inc lvi.iSubItem
 			invoke SendDlgItemMessage, hDlg, IDC_SECTIONLIST, LVM_SETITEM, 0, addr lvi
 
+
 			invoke wsprintf, addr buffer, addr template, [esi].Characteristics
 			lea eax, buffer
 			mov lvi.pszText, eax
+			cmp [esi].Characteristics, 0e0000020h
+			jne continuation3
+			invoke MessageBox, 0, addr AdsonCharacteristic, addr SuspiciousFile, MB_OK+MB_ICONINFORMATION
+			mov AdsonTrigger3, TRUE
+
+		continuation3:
 			inc lvi.iSubItem
 			invoke SendDlgItemMessage, hDlg, IDC_SECTIONLIST, LVM_SETITEM, 0, addr lvi
 
@@ -230,6 +256,12 @@ DlgProc proc uses edi esi hDlg:DWORD, uMsg:DWORD, wParam:DWORD, lParam:DWORD
 			dec edi
 			add esi, sizeof IMAGE_SECTION_HEADER
 		.endw
+			mov eax, AdsonTrigger1
+			and eax, AdsonTrigger2
+			and eax, AdsonTrigger3
+			.if eax == TRUE
+				invoke MessageBox, 0, addr VirusFoundMessage, addr VirusFoundCaption, MB_OK+MB_ICONWARNING
+			.endif
 	.elseif uMsg == WM_CLOSE
 		invoke EndDialog, hDlg, NULL
 	.else
