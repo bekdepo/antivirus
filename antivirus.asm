@@ -45,7 +45,7 @@ Characteristics		db "Characteristics", 0
 SuspiciousFile		db "Suspicious file detected", 0
 VirusFoundMessage		db "This file is infected with Win32.Adson", 0
 VirusFoundCaption		db "Malware Detected", 0
-VirusName			db ".Ads", 0
+VirusName			db ".Adson", 0
 AdsonName			db "The name of the last section is identical to that of the Adson Virus.", 0
 AdsonVirtualSize		db "Virtual size of the last section resembles that of the Adson Virus.", 0
 AdsonCharacteristic		db "The characteristic of the last section is identical to the Adson Virus.", 0
@@ -193,7 +193,7 @@ DlgProc proc uses edi esi hDlg:DWORD, uMsg:DWORD, wParam:DWORD, lParam:DWORD
 			lea edi, [esi].Name1
 			push esi
 			cld
-			mov ecx, 4
+			mov ecx, 6
 			lea esi, VirusName
 			repz cmpsb
 			jne continuation1
