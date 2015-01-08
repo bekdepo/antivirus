@@ -10,4 +10,6 @@ Just a simple Win32.Adson antivirus that scans the Portable Executable(PE) for t
 
 The github version exe file is compiled under Visual Studio 2012. If you are still working under Windows XP, you need to use the NMAKE utility under Visual Studio 2010. Otherwise it is not recognized as a Win32 application.
 
+**Note**: In order to use NMAKE, you have to open the Developer Command Prompt 		for VS201x. It is not available under the dafault Command Prompt.
+
 **This page was created for the Assembly project at UTCLUJ.**
